@@ -19,6 +19,7 @@ import {
   createSuccessResponse,
   estimateInputTokens,
   extractOneMinContent,
+  ToolCallingEmulator,
   ValidationError,
   validateModelAndMessages,
   type WebSearchConfig,
@@ -66,9 +67,18 @@ export class ResponseHandler extends BaseTextHandler {
     const { cleanModel, webSearchConfig, processedMessages } =
       await validateModelAndMessages(rawModel, messages, this.env);
 
+    const hasTools = Array.isArray(requestBody.tools) && requestBody.tools.length > 0;
+    const tools = hasTools ? requestBody.tools : undefined;
+    const toolChoice = requestBody.tool_choice;
+
+    let finalMessages = processedMessages;
+    if (tools) {
+      finalMessages = ToolCallingEmulator.injectToolsIntoMessages(finalMessages, tools as any, toolChoice);
+    }
+
     if (requestBody.stream) {
       return this.handleStreamingResponse(
-        processedMessages,
+        finalMessages,
         cleanModel,
         requestBody.response_format,
         requestBody.reasoning_effort,
@@ -78,7 +88,7 @@ export class ResponseHandler extends BaseTextHandler {
     }
 
     return this.handleNonStreamingResponse(
-      processedMessages,
+      finalMessages,
       cleanModel,
       requestBody.response_format,
       requestBody.reasoning_effort,

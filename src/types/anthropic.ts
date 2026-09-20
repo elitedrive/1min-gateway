@@ -137,6 +137,7 @@ export interface AnthropicMessageDeltaEvent {
   };
   usage: {
     output_tokens: number;
+    input_tokens?: number;
   };
 }
 

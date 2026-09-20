@@ -205,6 +205,7 @@ export class MessagesHandler extends BaseTextHandler {
     webSearchConfig?: WebSearchConfig,
     tools?: ToolDefinition[],
   ): Promise<Response> {
+    const computedInputTokens = estimateInputTokens(messages);
     const response = await this.sendStreamingRequest(
       messages,
       model,
@@ -226,7 +227,7 @@ export class MessagesHandler extends BaseTextHandler {
             stop_reason: null,
             stop_sequence: null,
             usage: {
-              input_tokens: estimateInputTokens(messages),
+              input_tokens: computedInputTokens,
               output_tokens: 0,
             },
           };
@@ -282,7 +283,7 @@ export class MessagesHandler extends BaseTextHandler {
             await writeSSEEventWithType(writer, "message_delta", {
               type: "message_delta",
               delta: { stop_reason: "tool_use" },
-              usage: { output_tokens: outputTokens },
+              usage: { output_tokens: outputTokens, input_tokens: computedInputTokens },
             });
           } else {
             const cleanContent =
@@ -308,7 +309,7 @@ export class MessagesHandler extends BaseTextHandler {
             await writeSSEEventWithType(writer, "message_delta", {
               type: "message_delta",
               delta: { stop_reason: "end_turn" },
-              usage: { output_tokens: outputTokens },
+              usage: { output_tokens: outputTokens, input_tokens: computedInputTokens },
             });
           }
 
@@ -331,7 +332,7 @@ export class MessagesHandler extends BaseTextHandler {
           stop_reason: null,
           stop_sequence: null,
           usage: {
-            input_tokens: estimateInputTokens(messages),
+            input_tokens: computedInputTokens,
             output_tokens: 0,
           },
         };
@@ -369,7 +370,7 @@ export class MessagesHandler extends BaseTextHandler {
         await writeSSEEventWithType(writer, "message_delta", {
           type: "message_delta",
           delta: { stop_reason: "end_turn" },
-          usage: { output_tokens: outputTokens },
+          usage: { output_tokens: outputTokens, input_tokens: computedInputTokens },
         });
 
         // Send message_stop

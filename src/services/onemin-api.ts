@@ -26,7 +26,8 @@ function formatMessageItem(msg: Message): string {
   // 1. Mensagens com role "tool" ou "function" (Retorno de busca/memória)
   if (msg.role === "tool" || msg.role === "function") {
     const cleanContent = ResponseSanitizer.unpackMemoryContent(msg.content);
-    return `[Contexto do Sistema - Informação Recuperada]:\n${cleanContent}`;
+    const toolIdStr = msg.tool_call_id ? ` (ID: ${msg.tool_call_id})` : "";
+    return `[Contexto do Sistema - Informação Recuperada${toolIdStr}]:\n${cleanContent}`;
   }
 
   // 2. Mensagens do assistente que continham chamadas de ferramentas

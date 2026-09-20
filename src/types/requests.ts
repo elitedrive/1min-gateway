@@ -52,6 +52,7 @@ export interface ResponseFormat {
 
 export interface ResponseRequest {
   model?: string;
+  tool_choice?: unknown;
   // Support both input (simple) and messages (conversational) formats
   input?: string | ResponseInputItem[];
   messages?: Array<{

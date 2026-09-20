@@ -158,8 +158,9 @@ Formato estrito de acionamento de ferramentas:
     if (!content || typeof content !== "string") return null;
 
     // 0. Remove blocos <think>...</think> de modelos com raciocínio
-    const sanitized = content.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
-    if (!sanitized) return null;
+    let sanitized = content.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+    sanitized = sanitized.replace(/<\/?tool_call>/gi, "").trim();
+if (!sanitized) return null;
 
     // 1. Tenta blocos Markdown ```json ... ```
     const mdMatches = [

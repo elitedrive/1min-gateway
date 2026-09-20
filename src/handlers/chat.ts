@@ -128,6 +128,7 @@ export class ChatHandler extends BaseTextHandler {
     signal?: AbortSignal,
     tools?: ToolDefinition[],
   ): Promise<Response> {
+    const responseId = `chatcmpl-${crypto.randomUUID()}`;
     const response = await this.sendStreamingRequest(
       messages,
       model,
@@ -166,11 +167,10 @@ export class ChatHandler extends BaseTextHandler {
                     },
                   ],
                 },
-                null,
-              );
+                null, responseId);
               await writeSSEEvent(writer, returnChunk);
             }
-            const finalChunk = createOpenAISSEChunk(model, {}, "tool_calls");
+            const finalChunk = createOpenAISSEChunk(model, {}, "tool_calls", responseId);
             await writeSSEEvent(writer, finalChunk);
           } else {
             const cleanContent =
@@ -179,11 +179,10 @@ export class ChatHandler extends BaseTextHandler {
               const returnChunk = createOpenAISSEChunk(
                 model,
                 { content: cleanContent },
-                null,
-              );
+                null, responseId);
               await writeSSEEvent(writer, returnChunk);
             }
-            const finalChunk = createOpenAISSEChunk(model, {}, "stop");
+            const finalChunk = createOpenAISSEChunk(model, {}, "stop", responseId);
             await writeSSEEvent(writer, finalChunk);
           }
           await writeSSEDone(writer);
@@ -196,12 +195,11 @@ export class ChatHandler extends BaseTextHandler {
         const returnChunk = createOpenAISSEChunk(
           model,
           { content: chunk },
-          null,
-        );
+          null, responseId);
         await writeSSEEvent(writer, returnChunk);
       },
       onEnd: async (writer) => {
-        const finalChunk = createOpenAISSEChunk(model, {}, "stop");
+        const finalChunk = createOpenAISSEChunk(model, {}, "stop", responseId);
         await writeSSEEvent(writer, finalChunk);
         await writeSSEDone(writer);
       },
