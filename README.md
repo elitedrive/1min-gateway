@@ -255,6 +255,8 @@ VeroDesk 1min Gateway integrates seamlessly with **n8n AI Agent**, **OpenAI Chat
 
 #### 3. Connecting RAG (Vector Stores & Memory)
 1. Connect a Vector Store node (e.g., **Qdrant Vector Store**, **Pinecone**, **Postgres / pgvector**, or **In-Memory Vector Store**) as a Tool or Retriever in n8n.
+> **⚠️ Important Note on RAG & Context Windows:** The upstream 1min.ai API truncates context history beyond a default limit (often ~10 messages) if using external tools that bloat the conversation array. If your Langchain or n8n pipeline injects numerous RAG documents as independent tool messages within the history array, they will be combined but may bump into limits unless properly managed as a single 'system context' block.
+
 2. When the RAG retrieval returns documents with metadata (e.g., `pageContent` and timestamps), the gateway's built-in **`ResponseSanitizer`** automatically extracts clean text and formats it as `[Contexto do Sistema - Informação Recuperada]`.
 3. **Anti-Leak Guarantee:** The agent's final text and voice messages (for WhatsApp, Telegram, or TTS) remain completely clean and human-friendly—free of `<think>`, `Tool: [...]`, or raw JSON leakage.
 
@@ -734,6 +736,8 @@ O VeroDesk 1min Gateway se integra de forma transparente com os nós **AI Agent*
 
 #### 3. Conectando RAG (Bancos Vetoriais e Memória)
 1. Conecte um nó de banco vetorial (ex: **Qdrant Vector Store**, **Pinecone**, **Postgres / pgvector**) como Ferramenta de Recuperação (Retriever) no n8n.
+> **⚠️ Nota Importante sobre RAG e Limites de Contexto:** A API upstream da 1min.ai por padrão trunca o histórico da conversa (geralmente fixado em 10 mensagens) se houver muitos dados soltos. Se você usa o n8n ou fluxos LangChain injetando contexto massivo na aba de histórico via blocos de 'ferramentas/ferramenta', muito desse conteúdo poderá ser truncado pelo servidor original caso as mensagens excedam esse limite. Idealmente, o próprio node deve injetar o contexto recuperado como uma única mensagem unificada.
+
 2. Quando a busca vetorial recuperar documentos com metadados (ex: `pageContent` e `metadata.timestamp`), o **`ResponseSanitizer`** do gateway desempacota o payload em texto puro legível, formatando como `[Contexto do Sistema - Informação Recuperada]`.
 3. **Garantia Anti-Vazamento:** A resposta final entregue ao usuário (WhatsApp, Telegram ou sintetizadores de voz/TTS) conterá apenas a fala humana natural, sem vazar código JSON, raciocínio `<think>` ou tags residuais `Tool:`.
 
