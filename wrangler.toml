@@ -1,0 +1,25 @@
+name = "verodesk-1min-gateway"
+main = "src/index.ts"
+compatibility_date = "2025-07-25"
+compatibility_flags = ["nodejs_compat"]
+
+# Evita que deploys pelo GitHub apaguem as variáveis definidas no painel
+keep_vars = true
+
+[observability]
+enabled = false
+
+[vars]
+# AUTH_TOKEN define a senha mestre de acesso.
+AUTH_TOKEN = "admin"
+ONE_MIN_API_URL = "https://api.1min.ai/api/features"
+ONE_MIN_ASSET_URL = "https://api.1min.ai/api/assets"
+ONE_MIN_CHAT_API_URL = "https://api.1min.ai/api/chat-with-ai"
+ONE_MIN_MODELS_API_URL = "https://api.1min.ai/models"
+
+# Automatic KV provisioning during the first Cloudflare Git deploy.
+[[kv_namespaces]]
+binding = "RATE_LIMIT_STORE"
+
+[[kv_namespaces]]
+binding = "MODEL_CACHE"

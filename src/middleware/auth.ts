@@ -1,6 +1,8 @@
+
 import { createMiddleware } from "hono/factory";
 import type { HonoEnv } from "../types/hono";
 import { AuthenticationError } from "../utils/errors";
+import { getGatewayConfig } from "../admin/store";
 
 export const authMiddleware = createMiddleware<HonoEnv>(async (c, next) => {
   // Support both OpenAI-style Bearer token and Anthropic-style x-api-key
@@ -14,18 +16,20 @@ export const authMiddleware = createMiddleware<HonoEnv>(async (c, next) => {
 
   let finalApiKey = incomingKey;
 
-  // Se AUTH_TOKEN estiver configurado no Worker
-  if (c.env.AUTH_TOKEN) {
-    if (incomingKey === c.env.AUTH_TOKEN) {
-      // Cliente usou a senha do proxy; usa a chave real configurada em ONE_MIN_API_KEY
-      if (!c.env.ONE_MIN_API_KEY) {
+  // Load config from KV (fallback to env)
+  const cfg = await getGatewayConfig(c.env);
+  const masterToken = (cfg.authToken && cfg.authToken.trim()) || c.env.AUTH_TOKEN;
+  const upstreamApiKey = (cfg.oneMinApiKey && cfg.oneMinApiKey.trim()) || c.env.ONE_MIN_API_KEY;
+
+  if (masterToken) {
+    if (incomingKey === masterToken) {
+      if (!upstreamApiKey) {
         throw new AuthenticationError(
-          "AUTH_TOKEN validado, mas ONE_MIN_API_KEY nao esta configurada no Worker.",
+          "AUTH_TOKEN validated, but ONE_MIN_API_KEY is not configured in KV or Worker variables."
         );
       }
-      finalApiKey = c.env.ONE_MIN_API_KEY;
-    } else if (incomingKey !== c.env.ONE_MIN_API_KEY) {
-      // Nao correspondeu nem ao AUTH_TOKEN nem a ONE_MIN_API_KEY
+      finalApiKey = upstreamApiKey;
+    } else if (incomingKey !== upstreamApiKey) {
       throw new AuthenticationError("Invalid API key");
     }
   }

@@ -3,6 +3,7 @@ import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { corsMiddleware } from "./middleware/cors";
 import apiRoutes from "./routes/api";
 import rootRoutes from "./routes/root";
+import adminRoutes from "./admin/routes";
 import { getModelData } from "./services/model-registry";
 import type { HonoEnv } from "./types/hono";
 import {
@@ -73,6 +74,7 @@ app.onError((err, c) => {
 // Routes
 app.route("/", rootRoutes);
 app.route("/v1", apiRoutes);
+app.route("/admin", adminRoutes);
 
 // 404 handler
 app.notFound((c) => {
