@@ -159,6 +159,7 @@ Formato estrito de acionamento de ferramentas:
 
     // 0. Remove blocos <think>...</think> de modelos com raciocínio
     let sanitized = content.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+    sanitized = sanitized.replace(/\u200B/g, "");
     sanitized = sanitized.replace(/<\/?tool_call>/gi, "").trim();
 if (!sanitized) return null;
 

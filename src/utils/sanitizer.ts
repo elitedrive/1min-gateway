@@ -12,6 +12,9 @@ export class ResponseSanitizer {
 
     let cleaned = text;
 
+    // 0. Remove os Zero-Width Spaces que injetamos nas URLs para evitar agregadores
+    cleaned = cleaned.replace(/\u200B/g, "");
+
     // 1. Remove blocos de raciocínio de modelos (<think>...</think>)
     cleaned = cleaned.replace(/<think>[\s\S]*?<\/think>/gi, "");
 
