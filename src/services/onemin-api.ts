@@ -22,6 +22,20 @@ import { isVisionModel } from "./model-registry";
  * Formata uma mensagem individual para representação textual no histórico
  * sem contaminar o modelo com tags literais "Tool:" ou JSON cru de memória
  */
+
+/**
+ * Adiciona um Zero-Width Space (ZWS) nas URLs para evitar que a 1min.ai 
+ * faça o auto-scraping dos links contidos no contexto.
+ */
+function obfuscateUrlsForAggregator(text: string): string {
+  if (!text) return text;
+  // Insere U+200B (Zero-width space) no meio de https://
+  const regex = new RegExp("https?://", "gi");
+  return text.replace(regex, (match) => {
+    return match.substring(0, match.length - 2) + '\u200B//';
+  });
+}
+
 function formatMessageItem(msg: Message): string {
   // 1. Mensagens com role "tool" ou "function" (Retorno de busca/memória)
   if (msg.role === "tool" || msg.role === "function") {
@@ -119,7 +133,7 @@ function formatConversationHistory(
     formattedHistory += `Human: ${newInput}\n\n`;
   }
 
-  return formattedHistory.trim();
+  return obfuscateUrlsForAggregator(formattedHistory.trim());
 }
 
 export class OneMinApiService {
